@@ -15,10 +15,6 @@ module SimpleCov
   module Formatter
     class HTMLFormatter
       def format(result)
-        Dir[File.join(File.dirname(__FILE__), "../public/*")].each do |path|
-          FileUtils.cp_r(path, asset_output_path)
-        end
-
         File.open(File.join(output_path, "index.html"), "wb") do |file|
           file.puts template("layout").result(binding)
         end
@@ -51,6 +47,20 @@ module SimpleCov
       def assets_path(name)
         File.join("./assets", SimpleCov::Formatter::HTMLFormatter::VERSION, name)
       end
+
+        # hack
+  def asset_inline(name)
+    require 'sprockets'
+    assets = Sprockets::Environment.new File.expand_path('../..',__FILE__)
+    # from: ../Rakefile assets:compile
+    assets.append_path 'assets/javascripts'
+    assets.append_path 'assets/stylesheets'
+    # also add /public, needed for images
+    assets.append_path 'public'
+    asset = assets.find_asset(name, accept_encoding: 'base64')
+    throw "not found: #{name}" if asset.nil?
+    "data:#{asset.content_type};base64,#{Base64.strict_encode64 asset.to_s}"
+  end
 
       # Returns the html for the given source_file
       def formatted_source_file(source_file)
