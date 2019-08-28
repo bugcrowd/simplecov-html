@@ -15,7 +15,7 @@ module SimpleCov
   module Formatter
     class HTMLFormatter
       def format(result)
-        File.open(File.join(output_path, "index.html"), "wb") do |file|
+        File.open(File.join(output_path, "coverage_report.html"), "wb") do |file|
           file.puts template("layout").result(binding)
         end
         puts output_message(result)
