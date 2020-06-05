@@ -1,26 +1,16 @@
+# frozen_string_literal: true
+
 source "https://rubygems.org"
 
 gemspec
 
-if RUBY_VERSION == "1.8.7"
-  gem "rake", "~> 10.5"
-else
-  gem "rake", ">= 11"
-end
+gem "rake", ">= 11"
 
 # Use local copy of simplecov in development when checked out, fetch from git otherwise
 if File.directory?(File.dirname(__FILE__) + "/../simplecov")
   gem "simplecov", :path => File.dirname(__FILE__) + "/../simplecov"
 else
-  gem "simplecov", :git => "https://github.com/colszowka/simplecov"
-end
-
-platforms :ruby_18, :ruby_19 do
-  gem "json", "~> 1.8"
-end
-
-platforms :ruby_18, :ruby_19, :ruby_20, :ruby_21 do
-  gem "rack", "~> 1.6"
+  gem "simplecov", :github => "colszowka/simplecov"
 end
 
 group :test do
@@ -30,5 +20,8 @@ end
 group :development do
   gem "rubocop"
   gem "sass"
-  gem "sprockets"
+  # sprockets 4.0 requires ruby 2.5+
+  gem "sprockets", "~> 3.7"
+  gem "uglifier"
+  gem "yui-compressor"
 end

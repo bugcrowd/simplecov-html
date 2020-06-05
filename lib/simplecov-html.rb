@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "erb"
 require "cgi"
 require "fileutils"
@@ -14,6 +16,10 @@ end
 module SimpleCov
   module Formatter
     class HTMLFormatter
+      def initialize
+        @branchable_result = SimpleCov.branch_coverage?
+      end
+
       def format(result)
         File.open(File.join(output_path, "coverage_report.html"), "wb") do |file|
           file.puts template("layout").result(binding)
@@ -23,6 +29,21 @@ module SimpleCov
 
       def output_message(result)
         "Coverage report generated for #{result.command_name} to #{output_path}. #{result.covered_lines} / #{result.total_lines} LOC (#{result.covered_percent.round(2)}%) covered."
+      end
+
+      def branchable_result?
+        # cached in initialize because we truly look it up a whole bunch of times
+        # and it's easier to cache here then in SimpleCov because there we might
+        # still enable/disable branch coverage criterion
+        @branchable_result
+      end
+
+      def line_status?(source_file, line)
+        if branchable_result? && source_file.line_with_missed_branch?(line.number)
+          "missed-branch"
+        else
+          line.status
+        end
       end
 
     private
@@ -77,6 +98,10 @@ module SimpleCov
         # The variable is used by ERB via binding.
         title_id = title_id
         template("file_list").result(binding)
+      end
+
+      def covered_percent(percent)
+        template("covered_percent").result(binding)
       end
 
       def coverage_css_class(covered_percent)
